@@ -1,3 +1,5 @@
 /venv/
 .idea/
 .DS_Store
+secure.py
+__pycache__/
