@@ -1,4 +1,5 @@
 from finance import *
+from output import *
 
 class DB:
     stocks = {}
@@ -13,6 +14,10 @@ class DB:
         for index in range(cls.stocks_number):
             data = yf.Ticker(cls.stocks[index]["ticker"])
             history = data.history()
+            cls.stocks[index]["now_price"] = get_tick_price(history)
+            cls.stocks[index]["change"] = cls.stocks[index]["now_price"] - cls.stocks[index]["price"]
+            cls.stocks[index]["change_percent"] = (cls.stocks[index]["now_price"] / cls.stocks[index]["price"] - 1) * 100
+            cls.stocks[index]["change_sign"] = price_change_emoji(cls.stocks[index]["change_percent"])
             price += cls.stocks[index]["quantity"] * get_tick_price(history)
         cls.now_price = price
 

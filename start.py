@@ -23,7 +23,20 @@ def handle_start_help(message):
     change = str(round((DB.now_price - DB.start_price), 2))
     change_percent = round(((DB.now_price / DB.start_price - 1) * 100), 2)
     change_sign = price_change_emoji(change_percent)
-    bot.send_message(message.chat.id, header + now_price + " $, " + change_sign + " " + change + " $ ("+ str(change_percent) + " %)", parse_mode="Markdown")
+    stocks_info = ""
+    for index in range(DB.stocks_number):
+        stocks_info += "\n*"
+        stocks_info += DB.stocks[index]["ticker"]
+        stocks_info += ":* "
+        stocks_info += str(round(DB.stocks[index]["now_price"] * DB.stocks[index]["quantity"], 1))
+        stocks_info += " $, "
+        stocks_info += DB.stocks[index]["change_sign"]
+        stocks_info += " "
+        stocks_info += str(round(DB.stocks[index]["change"] * DB.stocks[index]["quantity"], 1))
+        stocks_info += " $ ("
+        stocks_info += str(round(DB.stocks[index]["change_percent"], 2))
+        stocks_info += ")"
+    bot.send_message(message.chat.id, header + now_price + " $, " + change_sign + " " + change + " $ ("+ str(change_percent) + " %)" + stocks_info, parse_mode="Markdown")
     pass
 
 
