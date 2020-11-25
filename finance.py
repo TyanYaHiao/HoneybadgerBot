@@ -1,25 +1,28 @@
 import yfinance as yf
 
 
-def get_tick_price(ticker):
-    tick = yf.Ticker(ticker)
-    data = tick.history()
-    return round(data.tail(1)['Close'].iloc[0], 2)
+def get_tick_price(history):
+    return history.tail(1)['Close'].iloc[0]
 
 
-def get_tick_price_hist(ticker, days_ago):
-    tick = yf.Ticker(ticker)
-    return tick.history(period=str(days_ago + "d"))['Close'][0]
+def get_tick_price_hist(data, days_change):
+    days_history = data.history(period=str(days_change + "d"))
+    return days_history['Close'][0]
 
 
-def get_tick_name(ticker):
-    tick = yf.Ticker(ticker)
-    return tick.info['shortName']
+def get_tick_name(data):
+    return data.info['shortName']
 
 
-def get_tick_currency(ticker):
-    tick = yf.Ticker(ticker)
-    return tick.info['currency']
+def get_tick_currency(data):
+    currency = data.info['currency']
+    if currency == "USD":
+        return " $"
+    elif currency == "EUR":
+        return " €"
+    elif currency == "RUB":
+        return " ₽"
+    return currency
 
 # for ticker in tickers:
 #     ticker_yahoo = yf.Ticker(ticker+'.SA')

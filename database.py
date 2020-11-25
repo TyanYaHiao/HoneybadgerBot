@@ -11,7 +11,9 @@ class DB:
     def calc_now_price(cls):
         price = 0
         for index in range(cls.stocks_number):
-            price += cls.stocks[index]["quantity"] * get_tick_price(cls.stocks[index]["ticker"])
+            data = yf.Ticker(cls.stocks[index]["ticker"])
+            history = data.history()
+            price += cls.stocks[index]["quantity"] * get_tick_price(history)
         cls.now_price = price
 
     @classmethod
