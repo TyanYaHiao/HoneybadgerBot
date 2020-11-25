@@ -1,8 +1,8 @@
 import telebot
-import emoji
 from secure import get_token
 from database import *
 from finance import *
+from output import *
 
 bot = telebot.TeleBot(get_token())
 DB.stocks_init()
@@ -17,13 +17,12 @@ def send_welcome(message):
 
 @bot.message_handler(commands=['stats'])
 def handle_start_help(message):
-    header_start = "*Start price: *"
-    header_now = "*Now price: *"
-    start_price = str(round(DB.start_price, 2))
+    header = "*Portfolio price:*\n"
     DB.calc_now_price()
     now_price = str(round(DB.now_price, 2))
-    bot.send_message(message.chat.id,
-                     header_start + start_price + " USD\n" + header_now + now_price + " USD", parse_mode="Markdown")
+    delta = round(((DB.now_price / DB.start_price - 1) * 100), 2)
+    change_sign = price_change_emoji(delta)
+    bot.send_message(message.chat.id, header + now_price + " USD, " + str(delta) + "% " + change_sign, parse_mode="Markdown")
 
     pass
 
@@ -32,7 +31,7 @@ def echo_all(message):
     try:
         message_words = str.split(message.text)
         tick = yf.Ticker(message_words[0])
-        name = str(tick.info['shortName'])
+        name = "*" + str(tick.info['shortName']) + "*"
         price = str(tick.info['open'])
         currency = str(tick.info['currency'])
         if len(message_words) > 1 and message_words[1].isdigit:
@@ -41,17 +40,8 @@ def echo_all(message):
         else:
             history = tick.history(period="20d")
             change = round(((tick.info['open'] / history['Close'][0] - 1) * 100), 1)
-        if change >= 10:
-            change_sign = emoji.emojize("🚀")
-        elif change > 0:
-            change_sign = emoji.emojize("⬆")
-        elif change < -10:
-            change_sign = emoji.emojize("💩")
-        elif change < 0:
-            change_sign = emoji.emojize("⬇")
-        else:
-            change_sign = ""
-        bot.send_message(message.chat.id, name + "\nPrice: " + price + " " + currency + ", " + str(change) + "% " + change_sign)
+        change_sign = price_change_emoji(change)
+        bot.send_message(message.chat.id, name + "\nPrice: " + price + " " + currency + ", " + str(change) + "% " + change_sign, parse_mode="Markdown")
     except:
         bot.reply_to(message, "Error")
 

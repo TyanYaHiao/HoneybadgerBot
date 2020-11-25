@@ -18,11 +18,11 @@ class DB:
     def stocks_init(cls):
         #               ticker, q-ty,   price
         cls.stock_init("AAPL",  1,      128.27)
-        cls.stock_init("AMD", 1, 53.95)
-        cls.stock_init("F", 15, 7.41)
-        cls.stock_init("INTC", 4, 55.79)
-        cls.stock_init("JPM", 1, 99.99)
-        cls.stock_init("T", 6, 33.61)
+        cls.stock_init("AMD",   1,      53.95)
+        cls.stock_init("F",     15,     7.41)
+        cls.stock_init("INTC",  4,      55.79)
+        cls.stock_init("JPM",   1,      99.99)
+        cls.stock_init("T",     6,      33.61)
 
     @classmethod
     def stock_init(cls, ticker, quantity, average_price):
