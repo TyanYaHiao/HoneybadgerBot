@@ -11,17 +11,24 @@ def get_tick_price_hist(data, days_change):
 
 
 def get_tick_name(data):
-    return data.info['shortName']
+    try:
+        name = data.info['shortName']
+    except:
+        name = data.ticker
+    return name
 
 
 def get_tick_currency(data):
-    currency = data.info['currency']
-    if currency == "USD":
-        return " $"
-    elif currency == "EUR":
-        return " €"
-    elif currency == "RUB":
-        return " ₽"
+    try:
+        currency = data.info['currency']
+        if currency == "USD":
+            return " $"
+        elif currency == "EUR":
+            return " €"
+        elif currency == "RUB":
+            return " ₽"
+    except:
+        currency = ""
     return currency
 
 # for ticker in tickers:

@@ -5,43 +5,52 @@ from finance import *
 from output import *
 
 bot = telebot.TeleBot(get_token())
-DB.stocks_init()
+us_portfolio = Portfolio()
+ru_portfolio = Portfolio()
+us_portfolio.us_portfolio_init()
+ru_portfolio.ru_portfolio_init()
 
 
 @bot.message_handler(commands=['start'])
-def send_welcome(message):
+def explanation_list(message):
     bot.send_message(message.chat.id, "Type ticker, get price and change\n"
                                       "Try ticker + .me for moscow exhange\n"
                                       "Use ticker + number to get days change")
 
 
 @bot.message_handler(commands=['stats'])
-def handle_start_help(message):
-    header = "*Portfolio price:*\n"
-    DB.calc_now_price()
-    now_price = str(round(DB.now_price, 2))
-    change = str(round((DB.now_price - DB.start_price), 2))
-    change_percent = round(((DB.now_price / DB.start_price - 1) * 100), 2)
-    change_sign = price_change_emoji(change_percent)
+def portfolio_stats(message):
+    header = "*Portfolio:*\n"
+    us_portfolio.update_cost()
+    cost_us = str(round(us_portfolio.cost, 2))
+    change_us = str(round((us_portfolio.change), 2))
+    change_percent_us = round(us_portfolio.change_percent, 1)
+    change_sign_us = us_portfolio.change_sign
+    sign_us = us_portfolio.currency_sign
+    ru_portfolio.update_cost()
+    cost_ru = str(round(ru_portfolio.cost, 0))
+    change_ru = str(round((ru_portfolio.change), 0))
+    change_percent_ru = round(ru_portfolio.change_percent, 1)
+    change_sign_ru = ru_portfolio.change_sign
+    sign_ru = ru_portfolio.currency_sign
     stocks_info = ""
-    for index in range(DB.stocks_number):
-        stocks_info += "\n*"
-        stocks_info += DB.stocks[index]["ticker"]
-        stocks_info += ":* "
-        stocks_info += str(round(DB.stocks[index]["now_price"] * DB.stocks[index]["quantity"], 1))
-        stocks_info += " $, "
-        stocks_info += DB.stocks[index]["change_sign"]
-        stocks_info += " "
-        stocks_info += str(round(DB.stocks[index]["change"] * DB.stocks[index]["quantity"], 1))
-        stocks_info += " $ ("
-        stocks_info += str(round(DB.stocks[index]["change_percent"], 2))
-        stocks_info += ")"
-    bot.send_message(message.chat.id, header + now_price + " $, " + change_sign + " " + change + " $ ("+ str(change_percent) + " %)" + stocks_info, parse_mode="Markdown")
+    sorted_portfolio = sorted(us_portfolio.stocks + ru_portfolio.stocks,
+                              key=lambda portfolio: portfolio.change_percent,
+                              reverse=True)
+    for index in range(len(sorted_portfolio)):
+        stocks_info += ticker_output(sorted_portfolio[index])
+    bot.send_message(message.chat.id, header + "*US:* " + cost_us + " " + sign_us + ", "
+                     + change_sign_us + " " + change_us + " " + sign_us + " ("
+                     + str(change_percent_us) + " %)\n"
+                     + "*RU:* " + cost_ru + " " + sign_ru + ", "
+                     + change_sign_ru + " " + change_ru + " " + sign_ru + " ("
+                     + str(change_percent_ru) + " %)"
+                     + stocks_info, parse_mode="Markdown")
     pass
 
 
 @bot.message_handler(func=lambda message: True)
-def echo_all(message):
+def ticker_info(message):
     try:
         message_words = str.split(message.text)
         data = yf.Ticker(message_words[0])
@@ -58,7 +67,11 @@ def echo_all(message):
         change = str(round((price - prev_price), 2))
         change_percent = round(((price / prev_price - 1) * 100), 1)
         change_sign = price_change_emoji(change_percent)
-        bot.send_message(message.chat.id, name + "\nPrice: " + price_str + currency + ", " + change_sign + " " + change + currency + " (" + str(change_percent) + " %) ", parse_mode="Markdown")
+        bot.send_message(message.chat.id, name + "\nPrice: "
+                         + price_str + currency + ", " + change_sign + " "
+                         + change + currency
+                         + " (" + str(change_percent) + " %) ",
+                         parse_mode="Markdown")
     except:
         bot.reply_to(message, "Error")
 
