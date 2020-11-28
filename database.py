@@ -49,6 +49,21 @@ class Portfolio:
         self.change_percent = (self.cost / self.cost_average - 1) * 100
         self.change_sign = price_change_emoji(self.change_percent)
 
+    # @classmethod
+    def update_history_cost(self, days_change):
+        cost_history = 0
+        for index in range(len(self.stocks)):
+            data = yf.Ticker(self.stocks[index].ticker)
+            self.stocks[index].price_history =\
+                get_tick_price_hist(data, days_change)
+            self.stocks[index].cost_history =\
+                self.stocks[index].price_history * self.stocks[index].quantity
+            cost_history += self.stocks[index].cost_history
+        self.cost_history = cost_history
+        self.change_history = self.cost - self.cost_history
+        self.change_history_percent = (self.cost / self.cost_history - 1) * 100
+        self.change_history_sign = price_change_emoji(self.change_history_percent)
+
     def us_portfolio_init(self):
         self.stocks = [
             Stock("AAPL", 1, 128.27),
@@ -98,3 +113,33 @@ class Portfolio:
                                       + self.stocks[index].ticker
         self.currency = "RUB"
         self.currency_sign = "₽"
+
+
+def portfolio_performance_stats(portfolio, market_ticker):
+    days_change = "5"
+    portfolio.update_cost()
+    portfolio.update_history_cost(days_change)
+    portfolio_cost = portfolio.cost
+    portfolio_prev_cost = portfolio.cost_history
+    portfolio_change_percent =\
+        round(((portfolio_cost / portfolio_prev_cost - 1) * 100), 1)
+    portfolio_change_sign = price_change_emoji(portfolio_change_percent)
+    market_data = yf.Ticker(market_ticker)
+    market_history = market_data.history()
+    market_cost = get_tick_price(market_history)
+    market_prev_cost = get_tick_price_hist(market_data, days_change)
+    market_change_percent =\
+        round(((market_cost / market_prev_cost - 1) * 100), 1)
+    market_change_sign = price_change_emoji(market_change_percent)
+    portfolio_performance = portfolio_change_percent - market_change_percent
+    if portfolio_performance > 0:
+        portfolio_performance_word = "overperformed"
+    else:
+        portfolio_performance_word = "underperformed"
+    message = "Market change: " + market_change_sign + " "\
+              + str(market_change_percent) + " %\n" \
+              + "Portfolio price change: " + portfolio_change_sign + " "\
+              + str(portfolio_change_percent) + " %\n" + "You "\
+              + portfolio_performance_word + " the market for "\
+              + str(portfolio_performance) + " %"
+    return message

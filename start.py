@@ -1,5 +1,5 @@
 import telebot
-from secure import get_token
+from secure.secure import get_token
 from database import *
 from finance import *
 from output import *
@@ -16,6 +16,14 @@ def explanation_list(message):
     bot.send_message(message.chat.id, "Type ticker, get price and change\n"
                                       "Try ticker + .me for moscow exhange\n"
                                       "Use ticker + number to get days change")
+
+
+@bot.message_handler(commands=['performance'])
+def portfolio_stats(message):
+    us_message = "*US portfolio analytics:*\n" + portfolio_performance_stats(us_portfolio, "SPY")
+    ru_message = "*RU portfolio analytics:*\n" + portfolio_performance_stats(ru_portfolio, "ERUS")
+    bot.send_message(message.chat.id, us_message + "\n\n" + ru_message,
+                     parse_mode="Markdown")
 
 
 @bot.message_handler(commands=['stats'])
