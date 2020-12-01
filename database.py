@@ -131,7 +131,7 @@ def portfolio_performance_stats(portfolio, market_ticker):
     market_change_percent =\
         round(((market_cost / market_prev_cost - 1) * 100), 1)
     market_change_sign = price_change_emoji(market_change_percent)
-    portfolio_performance = portfolio_change_percent - market_change_percent
+    portfolio_performance = round(portfolio_change_percent - market_change_percent, 1)
     if portfolio_performance > 0:
         portfolio_performance_word = "overperformed"
     else:

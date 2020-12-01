@@ -3,6 +3,7 @@ from secure.secure import get_token
 from database import *
 from finance import *
 from output import *
+from pycbrf import *
 
 bot = telebot.TeleBot(get_token())
 us_portfolio = Portfolio()
@@ -13,9 +14,20 @@ ru_portfolio.ru_portfolio_init()
 
 @bot.message_handler(commands=['start'])
 def explanation_list(message):
-    bot.send_message(message.chat.id, "Type ticker, get price and change\n"
-                                      "Try ticker + .me for moscow exhange\n"
-                                      "Use ticker + number to get days change")
+    bot.send_message(message.chat.id, "Type ticker to get price and change\n"
+                                      "Try ticker + .me for moscow exhange price\n"
+                                      "Use ticker + number to get price change over the last X days")
+
+
+@bot.message_handler(commands=['rates'])
+def portfolio_stats(message):
+    rates = ExchangeRates()
+    usd_rate = rates["USD"].rate
+    eur_rate = rates["EUR"].rate
+    usd_message = "*USD rate:* " + str(round(usd_rate, 2))
+    eur_message = "\n*EUR rate:* " + str(round(eur_rate, 2))
+    bot.send_message(message.chat.id, usd_message + eur_message,
+                     parse_mode="Markdown")
 
 
 @bot.message_handler(commands=['performance'])
@@ -62,11 +74,11 @@ def ticker_info(message):
     try:
         message_words = str.split(message.text)
         data = yf.Ticker(message_words[0])
-        history = data.history()
         if len(message_words) > 1 and message_words[1].isdigit:
             days_change = message_words[1]
         else:
             days_change = "5"
+        history = data.history()
         name = "*" + str(get_tick_name(data)) + ":*"
         price = get_tick_price(history)
         price_str = str(round(get_tick_price(history), 2))
